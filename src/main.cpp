@@ -1,13 +1,13 @@
 #include "FS.h"
 #include "SD.h"
 #include "SPI.h"
-
-#include <map>
-#include <vector>
+#include "Wire.h"
 
 #include "GyverOLED.h"
 #include "Button.h"
 #include "TinyGPSPlus.h"
+#include "Adafruit_Sensor.h"
+#include "Adafruit_BME280.h"
 
 ///////////////////////////////////
 #define SERIAL_BAUD         115200
@@ -22,28 +22,36 @@
 
 #define PM_SENSOR_BAUD      9600
 
-#define SHUTDOWN_BUTTON_PIN 15 
+#define SHUTDOWN_BUTTON_PIN 15
+
+#define SEALEVELPRESSURE_HPA 1013.25f
+
+#define IS_BME_PRESENT false
 ///////////////////////////////////
 
 
 /////////////////////////////////////////////////
-Button shutdownBtn {15, false};
+Button shutdownBtn {SHUTDOWN_BUTTON_PIN, false};
 GyverOLED<SSD1306_128x64, OLED_BUFFER> oled;
 TinyGPSPlus gps;
+Adafruit_BME280 bme;
 String filename;
 /////////////////////////////////////////////////
 
 
 ////////////////////////
 static bool initSD();
+static bool initBME();
 static bool initGPS();
 static bool initFile();
 static void shutDown();
 
-bool get_pm(float& pm_10, float& pm_25);
+bool readPM(float& pm10, float& pm25);
 
 static void feedGpsSomeData(unsigned long ms);
 static bool isGPSDataValid();
+
+void readBME(float &alt, float& humidity, float& temperature, float& pressure);
 
 static void print_oled(const char* msg, int y = 1, int x = 1, bool clear = true, bool autoprint = true);
 static void writeFile(const char* path, String& message);
@@ -52,7 +60,8 @@ void IRAM_ATTR isr_button();
 ///////////////////////
 
 
-void setup() {
+void setup() 
+{
     Serial.begin(SERIAL_BAUD);
     Serial1.begin(GPS_BAUD, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
     Serial2.begin(PM_SENSOR_BAUD, SERIAL_8N1, -1, -1, false);
@@ -62,6 +71,10 @@ void setup() {
 
     /////////////////
     oled.init();
+
+    if(IS_BME_PRESENT) 
+        if(!initBME())
+            while(true);
 
     if (!initSD())
         while(true);
@@ -78,20 +91,25 @@ void setup() {
 }
 
 
-void loop() {
-    float pm_10 = 0.f, pm_25 = 0.f;
+void loop() 
+{
+    float pm10 = 0.f, pm25 = 0.f;
+    float bmeAlttitude = 0.f, humidity = 0.f, pressure = 0.f, temperature = 0.f;
     static unsigned long timet = 0;
+
     if(shutdownBtn.pressed)
-    {
         shutDown();
-    }
 
     feedGpsSomeData(GPS_FEED_TIME);
 
-    if (get_pm(pm_10, pm_25) && isGPSDataValid()) {
-        //"dd-mm-yyyy,hh:mm:ss,PM2.5,PM10,lat,lng,alt"
+    if (readPM(pm10, pm25) && isGPSDataValid()) 
+    {
+        if(IS_BME_PRESENT) readBME(bmeAlttitude, humidity, temperature, pressure);
+
+        //file output "dd-mm-yyyy,hh:mm:ss,PM2.5,PM10,lat,lng,alt,bmeAltitude,humidity,pressure,temperature"
         //the "\n" is added in writeFile()
-        if (millis() - timet >= FILE_WRITE_PERIOD) {
+        if (millis() - timet >= FILE_WRITE_PERIOD) 
+        {
             String strdata;
             strdata += String(gps.date.day());
             strdata += "-";
@@ -105,15 +123,18 @@ void loop() {
             strdata += ":";
             strdata += String(gps.time.second());
             strdata += ",";
-            strdata += String(pm_25);
+            strdata += String(pm25);
             strdata += ",";
-            strdata += String(pm_10);
+            strdata += String(pm10);
             strdata += ",";
             strdata += String(gps.location.lat(), 6U);
             strdata += ",";
             strdata += String(gps.location.lng(), 6U);
             strdata += ",";
             strdata += String(gps.altitude.meters(), 2U);
+            strdata += ",";
+            if(IS_BME_PRESENT) strdata += String(bmeAlttitude) + "," + String(humidity) + "," + String(pressure) + "," + String(temperature);
+            else strdata += "NONE,NONE,NONE,NONE";
 
             String dispdata;
             dispdata += "DATE ";
@@ -135,9 +156,9 @@ void loop() {
             dispdata.clear();
 
             dispdata += "PM ";
-            dispdata += String(pm_25, 1U);
+            dispdata += String(pm25, 1U);
             dispdata += ",";
-            dispdata += String(pm_10, 1U);
+            dispdata += String(pm10, 1U);
             print_oled(dispdata.c_str(), 3, 1, false, false);
             dispdata.clear();
 
@@ -182,6 +203,18 @@ static bool initSD()
     return true;
 }
 
+static bool initBME()
+{
+    bool status = bme.begin(0x76);  
+    if (!status) 
+    {
+        Serial.println("Could not find a valid BME280 sensor, check wiring!");
+        print_oled("NO BME SENSOR");
+        return false;
+    }
+    return true;
+}
+
 static bool initGPS()
 {
     unsigned long timer = millis();
@@ -193,7 +226,7 @@ static bool initGPS()
         if(isGPSDataValid()) break;
         if ((timer - millis() > GPS_MAX_WAIT_TIME) && gps.charsProcessed() < 10)
         {
-            print_oled("NO GPS DATA RECEIVEDCHECK WIRING");
+            print_oled("NO GPS DATA RECEIVED");
             Serial.println(F("No GPS data received: check wiring"));
             return false;
         }
@@ -223,7 +256,8 @@ static bool initFile()
     if(!SD.exists(filename))
     {
         File file = SD.open(filename, FILE_WRITE, true);
-        file.println("date,time,PM2.5,PM10,lat,lng,alt");
+        // see loop()
+        file.println("date,time,PM2.5,PM10,lat,lng,alt,bmeAlt,humidity,pressure,temp");
         file.close();
     }
     return true;
@@ -240,7 +274,8 @@ static void shutDown()
     while(true);
 }
 
-bool get_pm(float& pm_10, float& pm_25) {
+bool readPM(float& pm10, float& pm25) 
+{
     if (Serial2.available()) 
     {
         byte pm_buf[10];
@@ -249,12 +284,12 @@ bool get_pm(float& pm_10, float& pm_25) {
         unsigned int pm_25_count = 0;
         pm_25_count = pm_buf[3] << 8;
         pm_25_count |= pm_buf[2];
-        pm_25 = (float)pm_25_count / 10.0f;
+        pm25 = (float)pm_25_count / 10.0f;
 
         unsigned int pm_10_count = 0;
         pm_10_count = pm_buf[5] << 8;
         pm_10_count |= pm_buf[4];
-        pm_10 = (float)pm_10_count / 10.f;
+        pm10 = (float)pm_10_count / 10.f;
         return true;
     } 
     else
@@ -277,6 +312,14 @@ bool isGPSDataValid()
     return false;
 }
 
+void readBME(float &alt, float &humidity, float &temperature, float &pressure)
+{
+    alt         = bme.readAltitude(SEALEVELPRESSURE_HPA);
+    humidity    = bme.readHumidity();
+    temperature = bme.readTemperature();
+    pressure    = bme.readPressure();
+}
+
 void print_oled(const char* msg, int y, int x, bool clear, bool autoprint)
 {
     if(clear) oled.clear();
@@ -286,7 +329,8 @@ void print_oled(const char* msg, int y, int x, bool clear, bool autoprint)
     oled.update();
 }
 
-static void writeFile(const char* path, String& message) {
+static void writeFile(const char* path, String& message) 
+{
     Serial.printf("Writing file: %s\n", path);
 
     File file = SD.open(path, FILE_APPEND);
