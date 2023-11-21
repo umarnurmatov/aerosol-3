@@ -31,5 +31,7 @@ const inline IPAddress ipLocal{192, 168, 0, 1};
 const inline IPAddress ipGateway{192, 168, 0, 1};
 const inline IPAddress ipSubnet{255, 255, 255, 0};
 
+// GLOBAL VARIABLES
 GyverOLED<SSD1306_128x64, OLED_BUFFER> oled;
+// GLOBAL VARIABLES
 } // namespace defines

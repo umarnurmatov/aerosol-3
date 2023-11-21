@@ -1,6 +1,6 @@
 #include "pmsensor.hpp"
 
-using namespace sensors;
+using namespace devices;
 
 PMsensor::PMsensor() {
   Serial2.begin(defines::PM_SENSOR_BAUD, SERIAL_8N1, -1, -1, false);
@@ -24,6 +24,9 @@ bool PMsensor::readPM() {
   return true;
 }
 
-String PMsensor::getDataString() {
-  return String(pm25) + "," + String(pm10) + ",";
+void PMsensor::showDataOnOled() {
+  dataString = "PM " + String(pm25, 1U) + "," + String(pm10, 1U);
+  utils::print_oled(dataString.c_str(), 1, 1, false, false);
 }
+
+String PMsensor::getDataString() { return dataString; }

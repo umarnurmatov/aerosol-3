@@ -49,8 +49,8 @@ IPAddress subnet(255, 255, 255, 0);
 
 /////////////////////////////////////////////////
 Button btn1{BUTTON_1_PIN, false};
-GyverOLED<SSD1306_128x64, OLED_BUFFER> oled;
-TinyGPSPlus gps;
+// GyverOLED<SSD1306_128x64, OLED_BUFFER> oled;
+// TinyGPSPlus gps;
 Adafruit_BME280 bme;
 String filename;
 FTPServer ftpServer;
@@ -141,34 +141,34 @@ void loop() {
     if (millis() - timet >= FILE_WRITE_PERIOD) {
       Serial.println(a);
       String strdata;
-      if (IS_GPS_PRESENT) {
-        strdata += String(gps.date.day());
-        strdata += "-";
-        strdata += String(gps.date.month());
-        strdata += "-";
-        strdata += String(gps.date.year());
-        strdata += ",";
-        strdata += String(gps.time.hour());
-        strdata += ":";
-        strdata += String(gps.time.minute());
-        strdata += ":";
-        strdata += String(gps.time.second());
-        strdata += ",";
-      } else
-        strdata += "NONE-NONE-NONE,NONE:NONE:NONE,";
-      strdata += String(pm25);
-      strdata += ",";
-      strdata += String(pm10);
-      strdata += ",";
-      if (IS_GPS_PRESENT) {
-        strdata += String(gps.location.lat(), 6U);
-        strdata += ",";
-        strdata += String(gps.location.lng(), 6U);
-        strdata += ",";
-        strdata += String(gps.altitude.meters(), 2U);
-        strdata += ",";
-      } else
-        strdata += "NONE,NONE,NONE,";
+      //   if (IS_GPS_PRESENT) {
+      //     strdata += String(gps.date.day());
+      //     strdata += "-";
+      //     strdata += String(gps.date.month());
+      //     strdata += "-";
+      //     strdata += String(gps.date.year());
+      //     strdata += ",";
+      //     strdata += String(gps.time.hour());
+      //     strdata += ":";
+      //     strdata += String(gps.time.minute());
+      //     strdata += ":";
+      //     strdata += String(gps.time.second());
+      //     strdata += ",";
+      //   } else
+      //     strdata += "NONE-NONE-NONE,NONE:NONE:NONE,";
+      //   strdata += String(pm25);
+      //   strdata += ",";
+      //   strdata += String(pm10);
+      //   strdata += ",";
+      //   if (IS_GPS_PRESENT) {
+      //     strdata += String(gps.location.lat(), 6U);
+      //     strdata += ",";
+      //     strdata += String(gps.location.lng(), 6U);
+      //     strdata += ",";
+      //     strdata += String(gps.altitude.meters(), 2U);
+      //     strdata += ",";
+      //   } else
+      // strdata += "NONE,NONE,NONE,";
       if (IS_BME_PRESENT)
         strdata += String(bmeAlttitude) + "," + String(humidity) + "," +
                    String(pressure) + "," + String(temperature);
@@ -214,15 +214,15 @@ void loop() {
         //     print_oled(dispdata.c_str(), 5, 1, false, false);
         //     dispdata.clear();
         // }
-        else {
-          dispdata += "PM ";
-          dispdata += String(pm25, 1U);
-          dispdata += ",";
-          dispdata += String(pm10, 1U);
-          print_oled(dispdata.c_str(), 1, 1, false, false);
-        }
+        // else {
+        //   dispdata += "PM ";
+        //   dispdata += String(pm25, 1U);
+        //   dispdata += ",";
+        //   dispdata += String(pm10, 1U);
+        //   print_oled(dispdata.c_str(), 1, 1, false, false);
+        // }
 
-      Serial.println(strdata);
+        Serial.println(strdata);
       writeFile(filename.c_str(), strdata);
       timet = millis();
     }

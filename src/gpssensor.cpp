@@ -1,7 +1,7 @@
 #include "gpssensor.hpp"
-using namespace sensors;
+using namespace devices;
 
-GPSsensor::GPSsensor() : gps{} {
+GPSsensor::GPSsensor() : gps{}, dataString{} {
   unsigned long timer = millis();
   utils::print_oled("WAITING GPS FIX...");
 
@@ -31,6 +31,8 @@ bool GPSsensor::isWorking() { return workingstate; }
 
 void GPSsensor::showDataOnOled() {
   String dispdata;
+  dataString.clear();
+
   if (!defines::IS_GPS_PRESENT)
     return;
 
@@ -41,6 +43,8 @@ void GPSsensor::showDataOnOled() {
   dispdata += "-";
   dispdata += String(gps.date.year());
   utils::print_oled(dispdata.c_str(), 1, 1, true, false);
+
+  dataString += dispdata;
   dispdata.clear();
 
   dispdata += "TIME ";
@@ -50,18 +54,26 @@ void GPSsensor::showDataOnOled() {
   dispdata += ":";
   dispdata += String(gps.time.second());
   utils::print_oled(dispdata.c_str(), 2, 1, false, false);
+
+  dataString += dispdata;
   dispdata.clear();
 
   dispdata += String(gps.location.lat(), 4U) + "N";
   dispdata += " ";
   dispdata += String(gps.location.lng(), 4U) + "E";
   utils::print_oled(dispdata.c_str(), 4, 1, false, false);
+
+  dataString += dispdata;
   dispdata.clear();
 
   dispdata += "ALT " + String(gps.altitude.meters(), 2U) + "m";
   utils::print_oled(dispdata.c_str(), 5, 1, false, false);
+
+  dataString += dispdata;
   dispdata.clear();
 }
+
+String GPSsensor::getDataString() { return dataString; }
 
 bool GPSsensor::isDataValid() {
   if (gps.location.isValid() && gps.time.isValid() && gps.date.isValid() &&
@@ -76,4 +88,15 @@ void GPSsensor::feedSomeData(unsigned long ms) {
     while (Serial1.available())
       gps.encode(Serial1.read());
   } while (millis() - start < ms);
+}
+
+String GPSsensor::getDateTimeString() {
+  TinyGPSDate date = gps.date;
+  TinyGPSTime time = gps.time;
+
+  String retstring = "/" + String(date.month()) + "-" + String(date.day()) +
+                     "-" + String(date.year()) + "$" + String(time.hour()) +
+                     "-" + String(time.minute()) + "-" + String(time.second()) +
+                     ".csv";
+  return retstring;
 }

@@ -1,17 +1,19 @@
 #pragma once
 
 #include "defines.hpp"
-#include <FS.h>
+#include "utils.hpp"
 
-namespace sensors {
+namespace devices {
 class PMsensor {
 public:
   PMsensor();
   bool readPM();
+  void showDataOnOled();
   String getDataString();
 
 private:
   float pm10, pm25;
   unsigned short pm10count, pm25count;
+  String dataString;
 };
-} // namespace sensors
+} // namespace devices
