@@ -4,9 +4,9 @@
 #include <GyverOLED.h>
 
 namespace defines {
-constexpr inline short SERIAL_BAUD = 115200;
-constexpr inline short PM_SENSOR_BAUD = 9600;
-constexpr inline short GPS_BAUD = 9600;
+constexpr inline int SERIAL_BAUD = 115200;
+constexpr inline int PM_SENSOR_BAUD = 9600;
+constexpr inline int GPS_BAUD = 9600;
 
 constexpr inline short GPS_FEED_TIME = 1000;
 constexpr inline short GPS_MAX_WAIT_TIME = 5000;

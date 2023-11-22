@@ -1,7 +1,10 @@
 #include "gpssensor.hpp"
 using namespace devices;
 
-GPSsensor::GPSsensor() : gps{}, dataString{} {
+GPSsensor::GPSsensor() : gps{} {
+  if (!defines::IS_GPS_PRESENT)
+    return;
+
   unsigned long timer = millis();
   utils::print_oled("WAITING GPS FIX...");
 
@@ -69,7 +72,7 @@ void GPSsensor::showDataOnOled() {
   dispdata += "ALT " + String(gps.altitude.meters(), 2U) + "m";
   utils::print_oled(dispdata.c_str(), 5, 1, false, false);
 
-  dataString += dispdata;
+  dataString += dispdata + " ";
   dispdata.clear();
 }
 
@@ -91,6 +94,9 @@ void GPSsensor::feedSomeData(unsigned long ms) {
 }
 
 String GPSsensor::getDateTimeString() {
+  if (!defines::IS_GPS_PRESENT)
+    return "";
+
   TinyGPSDate date = gps.date;
   TinyGPSTime time = gps.time;
 

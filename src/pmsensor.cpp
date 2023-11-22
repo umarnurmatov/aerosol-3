@@ -7,8 +7,10 @@ PMsensor::PMsensor() {
 }
 
 bool PMsensor::readPM() {
-  if (!Serial2.available())
+  if (!Serial2.available()) {
+    workingstate = false;
     return false;
+  }
 
   byte pm_buf[10];
   Serial2.readBytes(pm_buf, 10);
@@ -21,12 +23,19 @@ bool PMsensor::readPM() {
   pm10count |= pm_buf[4];
   pm10 = static_cast<float>(pm10count) / 10.f;
 
+  workingstate = true;
   return true;
 }
 
 void PMsensor::showDataOnOled() {
-  dataString = "PM " + String(pm25, 1U) + "," + String(pm10, 1U);
+  if (!readPM())
+    dataString = "PM PROBLEMS! ";
+  else
+    dataString = "PM " + String(pm25, 1U) + "," + String(pm10, 1U) + " ";
+
   utils::print_oled(dataString.c_str(), 1, 1, false, false);
 }
 
 String PMsensor::getDataString() { return dataString; }
+
+bool PMsensor::isWorking() { return workingstate; }

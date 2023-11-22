@@ -1,9 +1,7 @@
 #include "utils.hpp"
 
-using namespace utils;
-
-void print_oled(const char *msg, int y = 1, int x = 1, bool clear = 1,
-                bool autoprint = 1) {
+void utils::print_oled(const char *msg, int y, int x, bool clear,
+                       bool autoprint) {
   if (clear)
     defines::oled.clear();
 
@@ -11,4 +9,9 @@ void print_oled(const char *msg, int y = 1, int x = 1, bool clear = 1,
   defines::oled.setCursor(x, y);
   defines::oled.print(msg);
   defines::oled.update();
+}
+
+void utils::kill() {
+  for (;;)
+    ;
 }

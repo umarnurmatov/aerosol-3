@@ -7,11 +7,13 @@ namespace devices {
 class SDmodule {
 public:
   SDmodule();
-  bool initFile();
-  void writeFile();
+  bool initFile(String);
+  void writeFile(String &);
+  bool isWorking();
 
 private:
   bool workingstate;
+  File file;
   String filename;
 };
 } // namespace devices

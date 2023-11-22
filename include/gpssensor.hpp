@@ -1,23 +1,20 @@
 #pragma once
 
-#include "defines.hpp"
-#include "utils.hpp"
+#include "sensor.hpp"
 #include <TinyGPSPlus.h>
 
 namespace devices {
-class GPSsensor {
+class GPSsensor : public Sensor {
 public:
   GPSsensor();
   bool isDataValid();
-  void showDataOnOled();
-  String getDataString();
-  bool isWorking();
+  void showDataOnOled() override;
+  String getDataString() override;
+  bool isWorking() override;
   String getDateTimeString();
 
 private:
   TinyGPSPlus gps;
-  String dataString;
-  bool workingstate;
   void feedSomeData(unsigned long);
 };
 
