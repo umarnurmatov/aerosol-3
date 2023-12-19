@@ -3,29 +3,27 @@
 #include "pmsensor.hpp"
 #include "sdmodule.hpp"
 
-devices::BMEsensor bme;
-devices::GPSsensor gps;
-devices::PMsensor pm;
-devices::SDmodule sd;
+static devices::BMEsensor bme;
+static devices::GPSsensor gps;
+static devices::PMsensor pm;
+static devices::SDmodule sd;
 
 void setup() {
   Serial.begin(defines::SERIAL_BAUD);
-
-  if (defines::IS_GPS_PRESENT)
-    Serial1.begin(defines::GPS_BAUD, SERIAL_8N1, defines::GPS_RX_PIN,
-                  defines::GPS_TX_PIN);
-
-  Serial2.begin(defines::PM_SENSOR_BAUD, SERIAL_8N1, -1, -1, false);
+  Serial.println("STARTING SERIAL...");
 
   defines::oled.init();
 
-  if (!sd.isWorking())
-    utils::kill();
+  pm.init();
+  sd.init();
 
-  sd.initFile(gps.getDateTimeString());
+  if (defines::IS_GPS_PRESENT)
+    gps.init();
 
-  Serial.println("Init success!");
-  utils::print_oled("INIT SUCCESS!");
+  if (defines::IS_BME_PRESENT)
+    bme.init();
+
+  utils::print_oled("MAYBE INIT SUCCESS!");
 }
 
 void loop() {
@@ -33,10 +31,11 @@ void loop() {
   if (millis() - timet < defines::FILE_WRITE_PEERIOD)
     return;
 
-  pm.showDataOnOled();
-  bme.showDataOnOled();
-  gps.showDataOnOled();
+  defines::oled.clear();
 
-  sd.writeFile(gps.getDataString() + pm.getDataString() + bme.getDataString());
+  pm.showDataOnOled();
+
+  sd.writeFile(gps.getDateTimeString() + pm.getDataString() +
+               gps.getDataString() + bme.getDataString() + '\n');
   timet = millis();
 }

@@ -2,14 +2,19 @@
 
 using namespace devices;
 
-PMsensor::PMsensor() {
+bool PMsensor::init() {
+  workingstate = true;
   Serial2.begin(defines::PM_SENSOR_BAUD, SERIAL_8N1, -1, -1, false);
+  if (!Serial2.available()) {
+    workingstate = false;
+  }
+  return workingstate;
 }
 
 bool PMsensor::readPM() {
   if (!Serial2.available()) {
     workingstate = false;
-    return false;
+    return workingstate;
   }
 
   byte pm_buf[10];
@@ -24,16 +29,16 @@ bool PMsensor::readPM() {
   pm10 = static_cast<float>(pm10count) / 10.f;
 
   workingstate = true;
-  return true;
+  return workingstate;
 }
 
 void PMsensor::showDataOnOled() {
   if (!readPM())
     dataString = "PM PROBLEMS! ";
   else
-    dataString = "PM " + String(pm25, 1U) + "," + String(pm10, 1U) + " ";
+    dataString = String(pm25, 1U) + ";" + String(pm10, 1U) + ";";
 
-  utils::print_oled(dataString.c_str(), 1, 1, false, false);
+  utils::print_oled(dataString.c_str(), 1, 1, true, true);
 }
 
 String PMsensor::getDataString() { return dataString; }

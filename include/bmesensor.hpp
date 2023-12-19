@@ -6,7 +6,7 @@
 namespace devices {
 class BMEsensor : public Sensor {
 public:
-  BMEsensor();
+  bool init() override;
   void showDataOnOled() override;
   bool isWorking() override;
   String getDataString() override;

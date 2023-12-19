@@ -19,19 +19,7 @@ constexpr inline short BUTTON_2_PIN = 34;
 constexpr inline float SEALVLPRESSURE_HPA = 1013.25f;
 
 constexpr inline bool IS_BME_PRESENT = false;
-constexpr inline bool IS_GPS_PRESENT = false;
+constexpr inline bool IS_GPS_PRESENT = true;
 
-constexpr inline char *wifiSSID = "ESP32_AEROSOL";
-constexpr inline char *wifiPasswd = "xtcf7080";
-
-constexpr inline char *FTP_USER = "ESP32_FTP";
-constexpr inline char *FTP_PASSWD = "xtcf7080";
-
-const inline IPAddress ipLocal{192, 168, 0, 1};
-const inline IPAddress ipGateway{192, 168, 0, 1};
-const inline IPAddress ipSubnet{255, 255, 255, 0};
-
-// GLOBAL VARIABLES
-GyverOLED<SSD1306_128x64, OLED_BUFFER> oled;
-// GLOBAL VARIABLES
+static GyverOLED<SSD1306_128x64, OLED_BUFFER> oled;
 } // namespace defines

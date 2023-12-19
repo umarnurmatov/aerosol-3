@@ -5,7 +5,7 @@
 namespace devices {
 class PMsensor : public Sensor {
 public:
-  PMsensor();
+  bool init() override;
   void showDataOnOled() override;
   String getDataString() override;
   bool isWorking() override;

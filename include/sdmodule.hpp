@@ -6,7 +6,7 @@
 namespace devices {
 class SDmodule {
 public:
-  SDmodule();
+  bool init();
   bool initFile(String);
   void writeFile(String &);
   bool isWorking();

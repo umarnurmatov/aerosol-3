@@ -7,6 +7,7 @@
 namespace devices {
 class Sensor {
 public:
+  virtual bool init() = 0;
   virtual void showDataOnOled() = 0;
   virtual bool isWorking() = 0;
   virtual String getDataString() = 0;
