@@ -33,14 +33,17 @@ bool PMsensor::readPM() {
 }
 
 void PMsensor::showDataOnOled() {
+
+  utils::print_oled(dataString.c_str(), 1, 1, true, true);
+}
+
+String PMsensor::getDataString() {
   if (!readPM())
     dataString = "PM PROBLEMS! ";
   else
     dataString = String(pm25, 1U) + ";" + String(pm10, 1U) + ";";
 
-  utils::print_oled(dataString.c_str(), 1, 1, true, true);
+  return dataString;
 }
-
-String PMsensor::getDataString() { return dataString; }
 
 bool PMsensor::isWorking() { return workingstate; }
