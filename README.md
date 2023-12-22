@@ -8,6 +8,7 @@
 
 - [ESP32](https://aliexpress.ru/item/1005001621773806.html?sku_id=12000016846632559&spm=a2g2w.productlist.search_results.4.4b462af2QXIqAj)
 - [SD-module](https://aliexpress.ru/item/1005004384727345.html?sku_id=12000028990652050&spm=a2g2w.productlist.search_results.3.676a4b39maGki3)
+- [OLED](https://aliexpress.ru/item/32957309383.html?sku_id=10000002492059216&spm=a2g2w.productlist.search_results.2.242c788eJNhChz)
 - [SDS011 - aerosol sensor](https://aliexpress.ru/item/1005005764825242.html?sku_id=12000034270375674&spm=.search_results.1.4352672a4vkWWQ)
 - [GPS-module](https://aliexpress.ru/item/4001147538089.html?sku_id=10000014894512456&spm=a2g2w.productlist.search_results.0.2603f587QNQGnk)
 - [5V BEC for LiPo](https://aliexpress.ru/item/33043832956.html?sku_id=67441172602&spm=a2g2w.productlist.search_results.0.66a215c34DloFQ)
