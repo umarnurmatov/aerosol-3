@@ -3,7 +3,7 @@
 using namespace devices;
 
 bool SDmodule::init() {
-  if (!SD.begin()) {
+  if (!SD.begin(5)) {
     Serial.println("Card Mount Failed");
     utils::print_oled("SD INIT FAIL");
     workingstate = false;
@@ -25,7 +25,7 @@ bool SDmodule::init() {
 }
 
 bool SDmodule::initFile(String _filename) {
-  if (_filename = "") {
+  if (_filename == "") {
     Serial.println("Empty filename");
     int counter = 1;
     do {
@@ -37,6 +37,8 @@ bool SDmodule::initFile(String _filename) {
   }
 
   file = SD.open(filename, FILE_WRITE, true);
+  if (!file)
+    return false;
   file.println(
       "date;time;PM2.5;PM10;lat;lng;alt;bmeAlt;humidity;pressure;temp");
   file.close();
@@ -59,8 +61,8 @@ void SDmodule::writeFile(String &msg) {
   } else {
     Serial.println("Write failed");
     utils::print_oled("WRITE FAIL", 1, 1, true);
-    file.close();
-    utils::kill();
+    // file.close();
+    // utils::kill();
   }
 
   file.close();

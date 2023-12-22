@@ -16,6 +16,10 @@ void setup() {
 
   pm.init();
   sd.init();
+  sd.initFile(gps.getFileName());
+
+  if (!sd.isWorking())
+    utils::kill();
 
   if (defines::IS_GPS_PRESENT)
     gps.init();
