@@ -18,3 +18,4 @@
 
 The source code for ESP32 firmware. Records BME, GPS, SDS011 sensor readings in a CSV file on the SD card.
 
+<img src="https://github.com/umarnurmatov/aerosol-3/blob/master/photo_2023-12-22_22-55-12.jpg" width="200"/>
