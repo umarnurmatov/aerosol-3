@@ -19,7 +19,7 @@ constexpr inline short BUTTON_2_PIN = 34;
 constexpr inline float SEALVLPRESSURE_HPA = 1013.25f;
 
 constexpr inline bool IS_BME_PRESENT = false;
-constexpr inline bool IS_GPS_PRESENT = true;
+constexpr inline bool IS_GPS_PRESENT = false;
 
 static GyverOLED<SSD1306_128x64, OLED_BUFFER> oled;
 } // namespace defines
