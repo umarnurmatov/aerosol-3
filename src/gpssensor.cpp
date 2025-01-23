@@ -3,7 +3,8 @@ using namespace devices;
 
 GPSsensor::GPSsensor() : gps{} {}
 
-bool GPSsensor::init() {
+bool GPSsensor::init()
+{
   if (!defines::IS_GPS_PRESENT)
     return false;
 
@@ -14,15 +15,17 @@ bool GPSsensor::init() {
   utils::print_oled("WAITING GPS FIX...");
 
   Serial.println("Waiting GPS data");
-
-  for (;;) {
+  for (;;)
+  {
     feedSomeData(defines::GPS_FEED_TIME);
 
+    String data = Serial1.readStringUntil('*');
+    Serial.println(data);
     if (isDataValid())
       break;
 
-    if ((timer - millis() > defines::GPS_MAX_WAIT_TIME) &&
-        gps.charsProcessed() < 10) {
+    if ((millis() - timer > defines::GPS_MAX_WAIT_TIME))
+    {
       utils::print_oled("NO GPS DATA RECEIVED");
       Serial.println(F("No GPS data received: check wiring"));
       workingstate = false;
@@ -38,7 +41,8 @@ bool GPSsensor::init() {
 
 bool GPSsensor::isWorking() { return workingstate; }
 
-void GPSsensor::showDataOnOled() {
+void GPSsensor::showDataOnOled()
+{
   String dispdata;
   dataString.clear();
 
@@ -78,28 +82,33 @@ void GPSsensor::showDataOnOled() {
   dispdata.clear();
 }
 
-String GPSsensor::getDataString() {
+String GPSsensor::getDataString()
+{
   return defines::IS_GPS_PRESENT ? dataString : "0.0;0.0;0.0;";
 }
 
-bool GPSsensor::isDataValid() {
+bool GPSsensor::isDataValid()
+{
   if (gps.location.isValid() && gps.time.isValid() && gps.date.isValid() &&
       gps.altitude.isValid())
     return true;
   return false;
 }
 
-void GPSsensor::feedSomeData(unsigned long ms) {
+void GPSsensor::feedSomeData(unsigned long ms)
+{
   unsigned long start = millis();
-  do {
-    while (Serial1.available()) {
+  do
+  {
+    while (Serial1.available())
+    {
       gps.encode(Serial1.read());
-      utils::print_oled(getSatelliteString(), 3, 1, false, false);
     }
   } while (millis() - start < ms);
 }
 
-String GPSsensor::getFileName() {
+String GPSsensor::getFileName()
+{
   if (!defines::IS_GPS_PRESENT)
     return "";
 
@@ -113,7 +122,8 @@ String GPSsensor::getFileName() {
   return retstring;
 }
 
-String GPSsensor::getDateTimeString() {
+String GPSsensor::getDateTimeString()
+{
   if (!defines::IS_GPS_PRESENT)
     return String("00-00-0000;00-00;");
 
@@ -123,10 +133,12 @@ String GPSsensor::getDateTimeString() {
   String retstring = String(date.month()) + "-" + String(date.day()) + "-" +
                      String(date.year()) + ";" + String(time.hour()) + "-" +
                      String(time.minute()) + "-" + String(time.second()) + ";";
+  utils::print_oled(retstring.c_str(), 5, 1, false);
   return retstring;
 }
 
-const char *GPSsensor::getSatelliteString() {
+const char *GPSsensor::getSatelliteString()
+{
   static TinyGPSCustom sats(gps, "GPGSV", 3);
   return strcat("Satellites: ", sats.value());
 }

@@ -3,6 +3,7 @@
 #include "defines.hpp"
 #include "utils.hpp"
 #include <FS.h>
+#include <PMserial.h>
 
 namespace devices {
 class Sensor {
