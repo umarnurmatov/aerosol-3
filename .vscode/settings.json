@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.source_bash": "shellscript",
+        "*.svp": "systemverilog",
+        "random": "cpp"
+    }
+}

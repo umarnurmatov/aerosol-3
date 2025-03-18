@@ -3,7 +3,7 @@
 #include "utils.hpp"
 #include <SD.h>
 
-namespace devices {
+namespace modules {
 class SDmodule {
 public:
   bool init();

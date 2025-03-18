@@ -2,7 +2,7 @@
 
 #include "sensor.hpp"
 
-namespace devices {
+namespace modules {
 class PMsensor : public Sensor {
 public:
   bool init() override;

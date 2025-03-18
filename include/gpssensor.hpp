@@ -1,9 +1,8 @@
 #pragma once
 
 #include "sensor.hpp"
-#include <TinyGPSPlus.h>
 
-namespace devices {
+namespace modules {
 class GPSsensor : public Sensor {
 public:
   GPSsensor();
@@ -16,7 +15,6 @@ public:
   String getFileName();
 
 private:
-  TinyGPSPlus gps;
   void feedSomeData(unsigned long);
   const char *getSatelliteString();
 };

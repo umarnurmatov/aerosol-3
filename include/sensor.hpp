@@ -5,7 +5,7 @@
 #include <FS.h>
 #include <PMserial.h>
 
-namespace devices {
+namespace modules {
 class Sensor {
 public:
   virtual bool init() = 0;

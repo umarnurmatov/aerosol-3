@@ -1,17 +1,18 @@
 #include "sdmodule.hpp"
+#include "defines.hpp"
 
-using namespace devices;
+using namespace modules;
 
 bool SDmodule::init()
 {
   if (!SD.begin(5))
   {
-    Serial.println("Card Mount Failed");
     utils::print_oled("SD INIT FAIL");
     workingstate = false;
     return workingstate;
   }
   uint8_t cardType = SD.cardType();
+  ESP_LOGI(defines::ESP_LOG_TAG, "SD card type: %d", cardType);
 
   if (cardType == CARD_NONE)
   {
@@ -20,8 +21,7 @@ bool SDmodule::init()
     return workingstate;
   }
 
-  uint64_t cardSize = SD.cardSize() / (1024 * 1024);
-  Serial.printf("SD Card Size: %lluMB\n", cardSize);
+  ESP_LOGI(defines::ESP_LOG_TAG, "SD Card Size: %lluMB\n", SD.cardSize());
   utils::print_oled("SD INIT SUCCESS");
   workingstate = true;
   return workingstate;
@@ -31,7 +31,7 @@ bool SDmodule::initFile(String _filename)
 {
   if (_filename == "")
   {
-    Serial.println("Empty filename");
+    ESP_LOGW(defines::ESP_LOG_TAG, "Empty filename");
     int counter = 1;
     do
     {

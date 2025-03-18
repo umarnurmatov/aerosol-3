@@ -1,6 +1,8 @@
 #include "bmesensor.hpp"
+#include "devices.hpp"
 #include "utils.hpp"
 
+using namespace modules;
 using namespace devices;
 
 bool BMEsensor::init() {

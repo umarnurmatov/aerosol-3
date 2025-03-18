@@ -1,7 +1,10 @@
 #include "gpssensor.hpp"
-using namespace devices;
+#include "devices.hpp"
 
-GPSsensor::GPSsensor() : gps{} {}
+using namespace devices;
+using namespace modules;
+
+GPSsensor::GPSsensor() {}
 
 bool GPSsensor::init()
 {

@@ -1,14 +1,15 @@
 #include "utils.hpp"
+#include "devices.hpp"
 
 void utils::print_oled(const char *msg, int y, int x, bool clear,
                        bool autoprint) {
   if (clear)
-    defines::oled.clear();
+    devices::oled.clear();
 
-  defines::oled.autoPrintln(autoprint);
-  defines::oled.setCursor(x, y);
-  defines::oled.print(msg);
-  defines::oled.update();
+  devices::oled.autoPrintln(autoprint);
+  devices::oled.setCursor(x, y);
+  devices::oled.print(msg);
+  devices::oled.update();
 }
 
 void utils::kill() {

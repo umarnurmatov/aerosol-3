@@ -1,8 +1,5 @@
 #pragma once
 
-#include <FS.h>
-#include <GyverOLED.h>
-
 namespace defines
 {
 	constexpr inline int SERIAL_BAUD = 115200;
@@ -22,5 +19,12 @@ namespace defines
 	constexpr inline bool IS_BME_PRESENT = false;
 	constexpr inline bool IS_GPS_PRESENT = true;
 
-	static GyverOLED<SSD1306_128x64, OLED_BUFFER> oled;
+	constexpr inline const char *GUI_HUB_NET_NAME = "Aerosol_NET";
+	constexpr inline const char *GUI_HUB_DEVICE_NAME = "Aerosol_DEVICE";
+
+	constexpr inline const char *ESP_LOG_TAG = "aerosol_debug";
+
+	constexpr inline const char *SOFTAP_SSID = "Aerosol_AP";
+	constexpr inline const char *SOFTAP_PASSWORD = "123456789";
+
 } // namespace defines
