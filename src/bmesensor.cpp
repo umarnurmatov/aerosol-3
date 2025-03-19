@@ -18,11 +18,11 @@ bool BMEsensor::init() {
 }
 
 bool BMEsensor::isWorking() {
-  return defines::IS_BME_PRESENT ? workingstate : true;
+  return workingstate;
 }
 
 void BMEsensor::showDataOnOled() {
-  if (!defines::IS_BME_PRESENT)
+  if (!workingstate)
     return;
 
   dataString = String(bme.readAltitude(defines::SEALVLPRESSURE_HPA)) + ';' +

@@ -16,7 +16,7 @@ namespace defines
 
 	constexpr inline float SEALVLPRESSURE_HPA = 1013.25f;
 
-	constexpr inline bool IS_BME_PRESENT = false;
+	constexpr inline bool INIT_BME_AT_START = false;
 	constexpr inline bool INIT_GPS_AT_START = false;
 
 	constexpr inline const char *GUI_HUB_NET_NAME = "Aerosol_NET";
