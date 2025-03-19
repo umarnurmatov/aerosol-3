@@ -59,7 +59,6 @@ public:
   GUI_GuverHub();
 
   void init();
-  void tick();
 
 private:
   static void build(gh::Builder& b);

@@ -1,4 +1,4 @@
-#include "gui/gyverhub.hpp"
+#include "gyverhub.hpp"
 #include "devices.hpp"
 
 using namespace modules;
@@ -14,11 +14,6 @@ void GUI_GuverHub::init()
     WiFi.mode(WIFI_AP);
     WiFi.softAP(defines::SOFTAP_SSID, defines::SOFTAP_PASSWORD);
     hub.begin();
-}
-
-void GUI_GuverHub::tick()
-{
-    hub.tick();
 }
 
 void GUI_GuverHub::build(gh::Builder& b)
