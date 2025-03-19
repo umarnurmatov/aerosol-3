@@ -8,6 +8,11 @@
 namespace modules {
 class Sensor {
 public:
+  Sensor(bool state = false)
+    : workingstate { state }
+  {
+  } 
+
   virtual bool init() = 0;
   virtual void showDataOnOled() = 0;
   virtual bool isWorking() = 0;

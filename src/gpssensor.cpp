@@ -4,13 +4,13 @@
 using namespace devices;
 using namespace modules;
 
-GPSsensor::GPSsensor() {}
+GPSsensor::GPSsensor() 
+  : Sensor { false }
+{
+}
 
 bool GPSsensor::init()
 {
-  if (!defines::IS_GPS_PRESENT)
-    return false;
-
   Serial1.begin(defines::GPS_BAUD, SERIAL_8N1, defines::GPS_RX_PIN,
                 defines::GPS_TX_PIN);
 
@@ -49,7 +49,7 @@ void GPSsensor::showDataOnOled()
   String dispdata;
   dataString.clear();
 
-  if (!defines::IS_GPS_PRESENT)
+  if (!workingstate)
     return;
 
   dispdata += String(gps.date.day());
@@ -87,7 +87,7 @@ void GPSsensor::showDataOnOled()
 
 String GPSsensor::getDataString()
 {
-  return defines::IS_GPS_PRESENT ? dataString : "0.0;0.0;0.0;";
+  return workingstate ? dataString : "0.0;0.0;0.0;";
 }
 
 bool GPSsensor::isDataValid()
@@ -112,7 +112,7 @@ void GPSsensor::feedSomeData(unsigned long ms)
 
 String GPSsensor::getFileName()
 {
-  if (!defines::IS_GPS_PRESENT)
+  if (!workingstate)
     return "";
 
   TinyGPSDate date = gps.date;
@@ -127,7 +127,7 @@ String GPSsensor::getFileName()
 
 String GPSsensor::getDateTimeString()
 {
-  if (!defines::IS_GPS_PRESENT)
+  if (!workingstate)
     return String("00-00-0000;00-00;");
 
   TinyGPSDate date = gps.date;
