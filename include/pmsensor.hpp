@@ -18,3 +18,4 @@ private:
   unsigned short pm10count, pm25count;
 };
 } // namespace devices
+
