@@ -53,10 +53,10 @@
 
 namespace modules
 {
-class GUI
+class GUI_GuverHub
 {
 public:
-  GUI();
+  GUI_GuverHub();
 
   void init();
   void tick();
