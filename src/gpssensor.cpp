@@ -11,7 +11,7 @@ GPSsensor::GPSsensor()
 
 bool GPSsensor::init()
 {
-  Serial1.begin(defines::GPS_BAUD, SERIAL_8N1, defines::GPS_RX_PIN,
+  Serial1.begin(defines::GPS_SERIAL_BAUDRATE, SERIAL_8N1, defines::GPS_RX_PIN,
                 defines::GPS_TX_PIN);
 
   unsigned long timer = millis();

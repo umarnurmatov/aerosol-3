@@ -2,9 +2,9 @@
 
 namespace defines
 {
-	constexpr inline int SERIAL_BAUD = 115200;
-	constexpr inline int PM_SENSOR_BAUD = 9600;
-	constexpr inline int GPS_BAUD = 9600;
+	constexpr inline int SERIAL_BAUDRATE = 115200;
+	constexpr inline int PM_SENSOR_SERIAL_BAUDRATE = 9600;
+	constexpr inline int GPS_SERIAL_BAUDRATE = 9600;
 
 	constexpr inline short GPS_FEED_TIME = 1000;
 	constexpr inline int GPS_MAX_WAIT_TIME = 1200'000;

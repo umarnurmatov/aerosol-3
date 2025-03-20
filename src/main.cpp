@@ -83,7 +83,7 @@ GTimer timer(MS);
 
 void setup()
 {
-  Serial.begin(115200);
+  Serial.begin(defines::SERIAL_BAUDRATE);
   //////////// INIT STATE MACHINE ////////////
   state = PAGE_MAIN;
   line = 0;

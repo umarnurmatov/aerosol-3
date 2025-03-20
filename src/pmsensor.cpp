@@ -8,7 +8,7 @@ using namespace devices;
 #define START_BYTE_2 0x4d
 
 bool PMsensor::init() {
-    Serial2.begin(defines::PM_SENSOR_BAUD, SERIAL_8N1, -1, -1, false);
+    Serial2.begin(defines::PM_SENSOR_SERIAL_BAUDRATE, SERIAL_8N1, -1, -1, false);
   workingstate = true;
 
   if (!Serial2.available()) {
