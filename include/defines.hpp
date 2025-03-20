@@ -11,8 +11,10 @@ namespace defines
 	constexpr inline short FILE_WRITE_PEERIOD = 1500;
 	constexpr inline short GPS_RX_PIN = 2;
 	constexpr inline short GPS_TX_PIN = 4;
-	constexpr inline short BUTTON_1_PIN = 15;
-	constexpr inline short BUTTON_2_PIN = 34;
+	constexpr inline short ENCODER_DT_PIN = 39;
+	constexpr inline short ENCODER_CLK_PIN = 34;
+	constexpr inline short ENCODER_SW_PIN = 35;
+	constexpr inline short ENCODER_STEP_CNT = 5;
 
 	constexpr inline float SEALVLPRESSURE_HPA = 1013.25f;
 
