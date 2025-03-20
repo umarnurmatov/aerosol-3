@@ -12,6 +12,11 @@ void utils::print_oled(const char *msg, int y, int x, bool clear,
   devices::oled.update();
 }
 
+int32_t utils::clamp(int32_t x, int32_t min, int32_t max)
+{
+  return x < min ? min : (x > (max - 1) ? (max - 1) : x);
+}
+
 void utils::kill() {
   for (;;)
     ;

@@ -2,6 +2,17 @@
     "files.associations": {
         "*.source_bash": "shellscript",
         "*.svp": "systemverilog",
-        "random": "cpp"
-    }
+        "random": "cpp",
+        "esp32-hal.h": "c",
+        "cstdint": "cpp",
+        "array": "cpp",
+        "deque": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "unordered_set": "cpp",
+        "vector": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp"
+    },
+    "editor.tabSize": 2
 }

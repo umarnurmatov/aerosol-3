@@ -3,10 +3,10 @@
 #include "GyverHub.h"
 
 // BRIDGES
-// #define GH_NO_STREAM  // отключить встроенный модуль связи stream
+#define GH_NO_STREAM  // отключить встроенный модуль связи stream
 // #define GH_NO_HTTP    // отключить встроенный модуль связи http (для esp)
 // #define GH_NO_WS      // отключить встроенный модуль связи ws (для esp)
-// #define GH_NO_MQTT    // отключить встроенный модуль связи mqtt (для esp)
+#define GH_NO_MQTT    // отключить встроенный модуль связи mqtt (для esp)
 
 // #define GH_BRIDGE_AMOUNT 5       // количество мостов подключения
 // #define GH_WS_PORT 81            // websocket порт
