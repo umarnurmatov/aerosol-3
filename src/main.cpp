@@ -15,7 +15,7 @@ static modules::GUI_GuverHub gui_gyverhub;
 
 enum app_state_t
 {
-  INIT,
+  VOID,
   PAGE_MAIN,
   PAGE_WEBINTERFACE,
   PAGE_DATA_COLLECTING,
@@ -27,42 +27,92 @@ enum app_state_t
 };
 static app_state_t state, next_state;
 
+struct Field
+{
+  Field(String _name)
+    : name { _name }
+  {
+  }
+  String name;
+  virtual app_state_t processState(modules::Encoder& enc, app_state_t& state)
+  {
+    return VOID;
+  }
+  virtual String getValue_String()
+  {
+    return String{};
+  } 
+};
+
+struct Field_Transition : public Field
+{
+  Field_Transition(String name, app_state_t next_state)
+    : Field { name }, _next_state { next_state }
+  {
+  }
+  app_state_t processState(modules::Encoder& enc, app_state_t& state) override
+  {
+    if(enc.isClick()) {
+      return _next_state;
+    }
+    return state;
+  }
+  String getValue_String() override
+  {
+    return String{};
+  } 
+  app_state_t _next_state;
+};
+
+struct Field_Bool_Mod : public Field
+{
+  Field_Bool_Mod(String name, bool *val)
+    : Field { name }, _val{ val }
+  {
+  }
+  app_state_t processState(modules::Encoder& enc, app_state_t& state) override
+  {
+    if(enc.isClick() && (enc.isRight() || enc.isLeft())) {
+      *_val = !*_val;
+    }
+    return state;
+  }
+  String getValue_String() override
+  {
+    return String(*_val);
+  } 
+  bool *_val;
+};
+
+struct Field_Val : public Field
+{
+  Field_Val(String name, int32_t* val)
+    : Field { name }, _val{ val }
+  {
+  }
+  app_state_t processState(modules::Encoder& enc, app_state_t& state) override
+  {
+    return state;
+  }
+  String getValue_String() override
+  {
+    return String(*_val);
+  } 
+  int32_t *_val;
+};
+
 #include <vector>
-std::vector<String> page_main_items = 
-{
-  "Start",
-  "Web interface",
-  "Settings"
-};
+typedef std::vector<Field*> page_t;
+page_t page_main;
+page_t page_data_collecting;
+page_t page_webinterface;
+page_t page_settings;
+page_t page_settings_gps;
+page_t page_settings_sd;
+page_t *current_page;
+int32_t field;
 
-std::vector<String> page_data_collecting_items = 
-{
-  "Back"
-};
-
-std::vector<String> page_webinterface_items = 
-{
-  "Back"
-};
-
-std::vector<String> page_settings_items = 
-{
-  "GPS",
-  "SD card",
-  "Back"
-};
-
-std::vector<String> page_settings_gps_items = 
-{
-  "Initialize",
-  "Back"
-};
-
-std::vector<String> page_settings_sd_items = 
-{
-  "Initialize",
-  "Back"
-};
+bool gps_state = false;
 
 uint8_t bitmap_bat_low[] = {
     0x7e, 0x7e, 0x7e, 0x42, 0x42, 0x42, 0x7e, 0x3c
@@ -76,8 +126,6 @@ uint8_t bitmap_bat_high[] = {
     0x7e, 0x7e, 0x7e, 0x7e, 0x7e, 0x7e, 0x7e, 0x3c
 };
 
-int16_t line;
-
 #include <GyverTimer.h>
 GTimer timer(MS);
 
@@ -86,7 +134,28 @@ void setup()
   Serial.begin(defines::SERIAL_BAUDRATE);
   //////////// INIT STATE MACHINE ////////////
   state = PAGE_MAIN;
-  line = 0;
+  field = 0;
+
+  page_main.push_back(new Field_Transition("Start", PAGE_DATA_COLLECTING));
+  page_main.push_back(new Field_Transition("Web Interface", PAGE_WEBINTERFACE));
+  page_main.push_back(new Field_Transition("Settings", PAGE_SETTINGS));
+
+  page_data_collecting.push_back(new Field_Transition("Back", PAGE_MAIN));
+
+  page_webinterface.push_back(new Field_Transition("Back", PAGE_MAIN));
+
+  page_settings.push_back(new Field_Transition("GPS", PAGE_SETTINGS_GPS));
+  page_settings.push_back(new Field_Transition("SD", PAGE_SETTINGS_SD));
+  page_settings.push_back(new Field_Transition("Back", PAGE_MAIN));
+
+  page_settings_gps.push_back(new Field_Transition("Initialize", PAGE_SETTINGS_GPS_INIT));
+  page_settings_gps.push_back(new Field_Bool_Mod("GPS State: ", &gps_state));
+  page_settings_gps.push_back(new Field_Transition("Back", PAGE_SETTINGS));
+
+  page_settings_sd.push_back(new Field_Transition("Initialize", PAGE_SETTINGS_SD_INIT));
+  page_settings_sd.push_back(new Field_Transition("Back", PAGE_SETTINGS));
+
+  current_page = &page_main;
 
   //////////// INIT DISPLAY AND ENC ////////////
   enc.init();
@@ -130,86 +199,42 @@ void loop()
 
   // devices::hub.tick();
 
-  if(timer.isReady()) {
+  if(timer.isReady())
+  {
 
   enc.tick();
   if(enc.isClick()) ESP_LOGI(defines::ESP_LOG_TAG, "Encoder btn clicked");
   if(enc.isRight()) ESP_LOGI(defines::ESP_LOG_TAG, "Encoder turned right");
   if(enc.isLeft()) ESP_LOGI(defines::ESP_LOG_TAG, "Encoder turned left");
 
-  next_state = state;
 
   // STATE SWITCH //
+  next_state = current_page->at(field)->processState(enc, state);
+
   switch (state) {
     case PAGE_MAIN:
-    if (enc.isClick()) {
-      switch (line) {
-        case 0: next_state = PAGE_DATA_COLLECTING; break;
-        case 1: next_state = PAGE_WEBINTERFACE; break;
-        case 2: next_state = PAGE_SETTINGS; break;
-      }
-    }
+    current_page = &page_main;
     break;
     case PAGE_DATA_COLLECTING:
-    if (enc.isClick()) {
-      switch (line) {
-        case 0: next_state = PAGE_MAIN; break;
-      }
-    }
+    current_page = &page_data_collecting;
     break;
     case PAGE_WEBINTERFACE:
-    if (enc.isClick()) {
-      switch (line) {
-        case 0: next_state = PAGE_MAIN; break;
-      }
-    }
+    current_page = &page_webinterface;
     break;
     case PAGE_SETTINGS:
-    if (enc.isClick()) {
-      switch (line) {
-        case 0: next_state = PAGE_SETTINGS_GPS; break;
-        case 1: next_state = PAGE_SETTINGS_SD; break;
-        case 2: next_state = PAGE_MAIN; break;
-      }
-    }
+    current_page = &page_settings;
     break;
     case PAGE_SETTINGS_GPS:
-    if (enc.isClick()) {
-      switch (line) {
-        case 0: next_state = PAGE_SETTINGS_GPS_INIT; break;
-        case 1: next_state = PAGE_SETTINGS; break;
-      }
-    }
+    current_page = &page_settings_gps;
     break;
     case PAGE_SETTINGS_SD:
-    if (enc.isClick()) {
-      switch (line) {
-        case 0: next_state = PAGE_SETTINGS_SD_INIT; break;
-        case 1: next_state = PAGE_SETTINGS; break;
-      }
-    }
+    current_page = &page_settings_sd;
     break;
   }
 
   // MENU NAVIGATION //
-  switch (state) {
-    case PAGE_MAIN:
-      if (enc.isLeft()) line = utils::clamp(line + 1, 0, page_main_items.size());
-      else if (enc.isRight()) line = utils::clamp(line - 1, 0, page_main_items.size());
-      break;
-    case PAGE_SETTINGS:
-      if (enc.isLeft()) line = utils::clamp(line + 1, 0, page_settings_items.size());
-      else if (enc.isRight()) line = utils::clamp(line - 1, 0, page_settings_items.size());
-      break;
-    case PAGE_SETTINGS_GPS:
-      if (enc.isLeft()) line = utils::clamp(line + 1, 0, page_settings_gps_items.size());
-      else if (enc.isRight()) line = utils::clamp(line - 1, 0, page_settings_gps_items.size());
-      break;
-    case PAGE_SETTINGS_SD:
-      if (enc.isLeft()) line = utils::clamp(line + 1, 0, page_settings_sd_items.size());
-      else if (enc.isRight()) line = utils::clamp(line - 1, 0, page_settings_sd_items.size());
-      break;
-  }
+  if (enc.isLeft()) field = utils::clamp(field + 1, 0, current_page->size());
+  else if (enc.isRight()) field = utils::clamp(field - 1, 0, current_page->size());
 
   // DISPLAY BUFFER UPDATING //
   #define FONT_WIDTH 6
@@ -232,64 +257,67 @@ void loop()
 
   switch (state) {
     case PAGE_MAIN:
-      for (int i = 0; i < page_main_items.size(); ++i) {
+      for (int i = 0; i < page_main.size(); ++i) {
         devices::oled.setCursor(0, i + OFFSET);
-        devices::oled.printf("  %s", page_main_items[i]);
+        devices::oled.printf("  %s", page_main[i]->name);
       }
-      devices::oled.setCursor(0, line + OFFSET);
+      devices::oled.setCursor(0, field + OFFSET);
       devices::oled.print(">");
       break;
     case PAGE_DATA_COLLECTING:
-      for (int i = 0; i < page_data_collecting_items.size(); ++i) {
+      for (int i = 0; i < page_data_collecting.size(); ++i) {
         devices::oled.setCursor(0, i + OFFSET);
-        devices::oled.printf("  %s", page_data_collecting_items[i]);
+        devices::oled.printf("  %s", page_data_collecting[i]->name);
       }
-      devices::oled.setCursor(0, line + OFFSET);
+      devices::oled.setCursor(0, field + OFFSET);
       devices::oled.print(">");
-      devices::oled.setCursor(0, page_data_collecting_items.size() + OFFSET + 1);
+      devices::oled.setCursor(0, page_data_collecting.size() + OFFSET + 1);
       devices::oled.print("Collecting data");
       break;
     case PAGE_WEBINTERFACE:
-      for (int i = 0; i < page_webinterface_items.size(); ++i) {
+      for (int i = 0; i < page_webinterface.size(); ++i) {
         devices::oled.setCursor(0, i + OFFSET);
-        devices::oled.printf("  %s", page_webinterface_items[i]);
+        devices::oled.printf("  %s", page_webinterface[i]->name);
       }
-      devices::oled.setCursor(0, line + OFFSET);
+      devices::oled.setCursor(0, field + OFFSET);
       devices::oled.print(">");
-      devices::oled.setCursor(0, page_webinterface_items.size() + OFFSET + 1);
+      devices::oled.setCursor(0, page_webinterface.size() + OFFSET + 1);
       devices::oled.print("Webinterface");
       break;
     case PAGE_SETTINGS:
-      for (int i = 0; i < page_settings_items.size(); ++i) {
+      for (int i = 0; i < page_settings.size(); ++i) {
         devices::oled.setCursor(0, i + OFFSET);
-        devices::oled.printf("  %s", page_settings_items[i]);
+        devices::oled.printf("  %s", page_settings[i]->name);
       }
-      devices::oled.setCursor(0, line + OFFSET);
+      devices::oled.setCursor(0, field + OFFSET);
       devices::oled.print(">");
       break;
     case PAGE_SETTINGS_GPS:
-      for (int i = 0; i < page_settings_gps_items.size(); ++i) {
+      for (int i = 0; i < page_settings_gps.size(); ++i) {
         devices::oled.setCursor(0, i + OFFSET);
-        devices::oled.printf("  %s", page_settings_gps_items[i]);
+        devices::oled.printf("  %s %s", page_settings_gps[i]->name, page_settings_gps[i]->getValue_String());
       }
-      devices::oled.setCursor(0, line + OFFSET);
+      devices::oled.setCursor(0, field + OFFSET);
       devices::oled.print(">");
       break;
      case PAGE_SETTINGS_SD:
-      for (int i = 0; i < page_settings_sd_items.size(); ++i) {
+      for (int i = 0; i < page_settings_sd.size(); ++i) {
         devices::oled.setCursor(0, i + OFFSET);
-        devices::oled.printf("  %s", page_settings_sd_items[i]);
+        devices::oled.printf("  %s", page_settings_sd[i]->name);
       }
-      devices::oled.setCursor(0, line + OFFSET);
+      devices::oled.setCursor(0, field + OFFSET);
       devices::oled.print(">");
       break;
   }
 
+  // UPDATING DISPLAY FROM BUFFER //
   devices::oled.update();
   if (next_state != state) {
     devices::oled.clear();
-    line = 0;
+    field = 0;
   }
+  // UPDATEING STATE //
   state = next_state;
+
   }
 }
