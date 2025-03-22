@@ -27,78 +27,76 @@ enum app_state_t
 };
 static app_state_t state, next_state;
 
-struct Field
+class Field
 {
-  Field(String _name)
-    : name { _name }
-  {
-  }
-  String name;
-  virtual app_state_t processState(modules::Encoder& enc, app_state_t& state)
-  {
-    return VOID;
-  }
-  virtual String getValue_String()
-  {
-    return String{};
-  } 
+public:
+  Field(String name) : m_name { name } {}
+  virtual app_state_t process_state(modules::Encoder& enc, app_state_t& state) = 0;
+  virtual String value_string() const= 0;
+  virtual String name() { return m_name; }
+private:
+  String m_name;
 };
 
 struct Field_Transition : public Field
 {
   Field_Transition(String name, app_state_t next_state)
-    : Field { name }, _next_state { next_state }
+    : Field { name }, m_next_state { next_state }
   {
   }
-  app_state_t processState(modules::Encoder& enc, app_state_t& state) override
+  app_state_t process_state(modules::Encoder& enc, app_state_t& state) override
   {
     if(enc.isClick()) {
-      return _next_state;
+      return next_state;
     }
     return state;
   }
-  String getValue_String() override
+  String value_string() const override
   {
-    return String{};
+    return String();
   } 
-  app_state_t _next_state;
+private:
+  app_state_t m_next_state;
 };
 
 struct Field_Bool_Mod : public Field
 {
   Field_Bool_Mod(String name, bool *val)
-    : Field { name }, _val{ val }
+    : Field { name }, m_val{ val }
   {
   }
-  app_state_t processState(modules::Encoder& enc, app_state_t& state) override
+  app_state_t process_state(modules::Encoder& enc, app_state_t& state) override
   {
     if(enc.isClick() && (enc.isRight() || enc.isLeft())) {
-      *_val = !*_val;
+      *m_val = !*m_val;
     }
     return state;
   }
-  String getValue_String() override
+  String value_string() const override
   {
-    return String(*_val);
-  } 
-  bool *_val;
+    return String(*m_val);
+  }
+private:
+  bool *m_val;
 };
 
 struct Field_Val : public Field
 {
-  Field_Val(String name, int32_t* val)
-    : Field { name }, _val{ val }
+public:
+  Field_Val(String name, int32_t *val)
+    : Field { name }, m_val{ val }
   {
   }
-  app_state_t processState(modules::Encoder& enc, app_state_t& state) override
+  app_state_t process_state(modules::Encoder& enc, app_state_t& state) override
   {
     return state;
   }
-  String getValue_String() override
+  String value_string() const override
   {
-    return String(*_val);
+    return String(*m_val);
   } 
-  int32_t *_val;
+private:
+  int32_t *m_val;
 };
 
 #include <vector>
@@ -209,7 +207,7 @@ void loop()
 
 
   // STATE SWITCH //
-  next_state = current_page->at(field)->processState(enc, state);
+  next_state = current_page->at(field)->process_state(enc, state);
 
   switch (state) {
     case PAGE_MAIN:
@@ -259,7 +257,7 @@ void loop()
     case PAGE_MAIN:
       for (int i = 0; i < page_main.size(); ++i) {
         devices::oled.setCursor(0, i + OFFSET);
-        devices::oled.printf("  %s", page_main[i]->name);
+        devices::oled.printf("  %s", page_main[i]->name());
       }
       devices::oled.setCursor(0, field + OFFSET);
       devices::oled.print(">");
@@ -267,7 +265,7 @@ void loop()
     case PAGE_DATA_COLLECTING:
       for (int i = 0; i < page_data_collecting.size(); ++i) {
         devices::oled.setCursor(0, i + OFFSET);
-        devices::oled.printf("  %s", page_data_collecting[i]->name);
+        devices::oled.printf("  %s", page_data_collecting[i]->name());
       }
       devices::oled.setCursor(0, field + OFFSET);
       devices::oled.print(">");
@@ -277,7 +275,7 @@ void loop()
     case PAGE_WEBINTERFACE:
       for (int i = 0; i < page_webinterface.size(); ++i) {
         devices::oled.setCursor(0, i + OFFSET);
-        devices::oled.printf("  %s", page_webinterface[i]->name);
+        devices::oled.printf("  %s", page_webinterface[i]->name());
       }
       devices::oled.setCursor(0, field + OFFSET);
       devices::oled.print(">");
@@ -287,7 +285,7 @@ void loop()
     case PAGE_SETTINGS:
       for (int i = 0; i < page_settings.size(); ++i) {
         devices::oled.setCursor(0, i + OFFSET);
-        devices::oled.printf("  %s", page_settings[i]->name);
+        devices::oled.printf("  %s", page_settings[i]->name());
       }
       devices::oled.setCursor(0, field + OFFSET);
       devices::oled.print(">");
@@ -295,7 +293,7 @@ void loop()
     case PAGE_SETTINGS_GPS:
       for (int i = 0; i < page_settings_gps.size(); ++i) {
         devices::oled.setCursor(0, i + OFFSET);
-        devices::oled.printf("  %s %s", page_settings_gps[i]->name, page_settings_gps[i]->getValue_String());
+        devices::oled.printf("  %s %s", page_settings_gps[i]->name(), page_settings_gps[i]->value_string());
       }
       devices::oled.setCursor(0, field + OFFSET);
       devices::oled.print(">");
@@ -303,7 +301,7 @@ void loop()
      case PAGE_SETTINGS_SD:
       for (int i = 0; i < page_settings_sd.size(); ++i) {
         devices::oled.setCursor(0, i + OFFSET);
-        devices::oled.printf("  %s", page_settings_sd[i]->name);
+        devices::oled.printf("  %s", page_settings_sd[i]->name());
       }
       devices::oled.setCursor(0, field + OFFSET);
       devices::oled.print(">");
