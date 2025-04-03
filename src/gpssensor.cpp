@@ -11,6 +11,8 @@ GPSsensor::GPSsensor()
 
 bool GPSsensor::init()
 {
+  if (workingstate) return true;
+
   Serial1.begin(defines::GPS_SERIAL_BAUDRATE, SERIAL_8N1, defines::GPS_RX_PIN,
                 defines::GPS_TX_PIN);
 
