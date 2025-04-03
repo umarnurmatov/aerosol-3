@@ -5,9 +5,9 @@ using namespace modules;
 
 bool SDmodule::init()
 {
-  if (!SD.begin(5))
+  if (!SD.begin())
   {
-    utils::print_oled("SD INIT FAIL");
+    ESP_LOGE(defines::ESP_LOG_TAG, "SD card initialization failed");
     workingstate = false;
     return workingstate;
   }
@@ -16,27 +16,26 @@ bool SDmodule::init()
 
   if (cardType == CARD_NONE)
   {
-    Serial.println("No SD card attached");
+    ESP_LOGE(defines::ESP_LOG_TAG, "Card type not recognized");
     workingstate = false;
     return workingstate;
   }
 
-  ESP_LOGI(defines::ESP_LOG_TAG, "SD Card Size: %lluMB\n", SD.cardSize());
+  ESP_LOGI(defines::ESP_LOG_TAG, "SD Card Size: %lluMB", SD.cardSize());
   utils::print_oled("SD INIT SUCCESS");
   workingstate = true;
   return workingstate;
 }
 
-bool SDmodule::initFile(String _filename)
+int SDmodule::initFile(String _filename)
 {
   if (_filename == "")
   {
-    ESP_LOGW(defines::ESP_LOG_TAG, "Empty filename");
+    ESP_LOGW(defines::ESP_LOG_TAG, "Empty filename provided");
     int counter = 1;
     do
     {
       filename = "/" + String(counter++) + ".csv";
-      Serial.println(filename);
     } while (SD.exists(filename));
   }
   else
@@ -46,37 +45,30 @@ bool SDmodule::initFile(String _filename)
 
   file = SD.open(filename, FILE_WRITE, true);
   if (!file)
-    return false;
+    return 1;
+  ESP_LOGI(defines::ESP_LOG_TAG, "Initialized file %s", filename);
   file.println(
       "date;time;PM2.5;PM10;lat;lng;alt;bmeAlt;humidity;pressure;temp");
   file.close();
 
-  return true;
+  return 0;
 }
 
-void SDmodule::writeFile(String &msg)
+int SDmodule::writeFile(String &msg)
 {
   file = SD.open(filename, FILE_APPEND);
   if (!file)
-  {
-    utils::print_oled("FAILED TO OPEN FILE TO WRITE", 1, 1, true);
-    utils::kill();
-  }
+    ESP_LOGE(defines::ESP_LOG_TAG, "Failed to open %s for write", filename);
 
-  if (file.println(msg))
-  {
-    utils::print_oled("FILE WRITTEN", 6, 1, false);
-    utils::print_oled(filename.c_str(), 7, 1, false);
+  if (file.println(msg)) {
+    ESP_LOGI(defines::ESP_LOG_TAG, "Data was written to %s", filename);
+    file.close();
+    return 0;
   }
   else
-  {
-    Serial.println("Write failed");
-    utils::print_oled("WRITE FAIL", 1, 1, true);
-    // file.close();
-    // utils::kill();
-  }
+    ESP_LOGI(defines::ESP_LOG_TAG, "Failed to write to %s", filename);
 
-  file.close();
+  return 1;
 }
 
 bool SDmodule::isWorking() { return workingstate; }

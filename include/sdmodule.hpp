@@ -7,8 +7,8 @@ namespace modules {
 class SDmodule {
 public:
   bool init();
-  bool initFile(String);
-  void writeFile(String &);
+  int initFile(String);
+  int writeFile(String &);
   bool isWorking();
 
 private:
