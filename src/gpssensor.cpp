@@ -17,29 +17,25 @@ bool GPSsensor::init()
                 defines::GPS_TX_PIN);
 
   unsigned long timer = millis();
-  utils::print_oled("WAITING GPS FIX...");
 
-  Serial.println("Waiting GPS data");
+  ESP_LOGI(defines::ESP_LOG_TAG, "Waiting GPS data...");
   for (;;)
   {
     feedSomeData(defines::GPS_FEED_TIME);
 
     String data = Serial1.readStringUntil('*');
-    Serial.println(data);
     if (isDataValid())
       break;
 
     if ((millis() - timer > defines::GPS_MAX_WAIT_TIME))
     {
-      utils::print_oled("NO GPS DATA RECEIVED");
-      Serial.println(F("No GPS data received: check wiring"));
+      ESP_LOGW(defines::ESP_LOG_TAG, "No GPS data received: check wiring");
       workingstate = false;
       return workingstate;
     }
   }
 
-  utils::print_oled("GPS GOT 3D FIX");
-  Serial.println("GPS got 3D fix");
+  ESP_LOGI(defines::ESP_LOG_TAG, "GPS got 3D fix");
   workingstate = true;
   return workingstate;
 }
@@ -59,7 +55,7 @@ void GPSsensor::showDataOnOled()
   dispdata += String(gps.date.month());
   dispdata += "-";
   dispdata += String(gps.date.year());
-  utils::print_oled(dispdata.c_str(), 1, 1, true, false);
+  // utils::print_oled(dispdata.c_str(), 1, 1, true, false);
 
   dispdata.clear();
 
@@ -68,20 +64,20 @@ void GPSsensor::showDataOnOled()
   dispdata += String(gps.time.minute());
   dispdata += "-";
   dispdata += String(gps.time.second());
-  utils::print_oled(dispdata.c_str(), 2, 1, false, false);
+  // utils::print_oled(dispdata.c_str(), 2, 1, false, false);
 
   dispdata.clear();
 
   dispdata += String(gps.location.lat(), 4U) + "N";
   dispdata += ';';
   dispdata += String(gps.location.lng(), 4U) + "E";
-  utils::print_oled(dispdata.c_str(), 4, 1, false, false);
+  // utils::print_oled(dispdata.c_str(), 4, 1, false, false);
 
   dataString += dispdata + ';';
   dispdata.clear();
 
   dispdata += "ALT " + String(gps.altitude.meters(), 2U) + "m";
-  utils::print_oled(dispdata.c_str(), 5, 1, false, false);
+  // utils::print_oled(dispdata.c_str(), 5, 1, false, false);
 
   dataString += dispdata + ';';
   dispdata.clear();
@@ -138,7 +134,7 @@ String GPSsensor::getDateTimeString()
   String retstring = String(date.month()) + "-" + String(date.day()) + "-" +
                      String(date.year()) + ";" + String(time.hour()) + "-" +
                      String(time.minute()) + "-" + String(time.second()) + ";";
-  utils::print_oled(retstring.c_str(), 5, 1, false);
+  // utils::print_oled(retstring.c_str(), 5, 1, false);
   return retstring;
 }
 
